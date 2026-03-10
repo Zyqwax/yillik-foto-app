@@ -124,18 +124,17 @@ export default function VitrinClient({ initialPhotos, user }: { initialPhotos: P
     setAllPhotos(prev => sortPhotosLocal(prev, newSort));
   };
 
-  const handleUploadSuccess = (newPhoto?: UploadResponsePhoto) => {
-    if (newPhoto) {
-      // API'den gelen veriyi client modeline uygun hale getirelim
-      const formattedPhoto: PhotoType = {
+  const handleUploadSuccess = (newPhotos?: UploadResponsePhoto[]) => {
+    if (newPhotos && newPhotos.length > 0) {
+      const formattedPhotos = newPhotos.map(newPhoto => ({
         id: newPhoto._id,
         url: newPhoto.url,
         caption: newPhoto.caption,
         voteCount: 0,
         user: { name: user.name, username: user.username },
         hasVoted: false,
-      };
-      const newAll = [formattedPhoto, ...allPhotos];
+      }));
+      const newAll = [...formattedPhotos, ...allPhotos];
       setAllPhotos(sortPhotosLocal(newAll, sortBy));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {

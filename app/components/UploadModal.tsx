@@ -12,8 +12,8 @@ interface UploadResponsePhoto {
   updatedAt: string;
 }
 
-export default function UploadModal({ isOpen, onClose, onUploadSuccess }: { isOpen: boolean, onClose: () => void, onUploadSuccess: (photo?: UploadResponsePhoto) => void }) {
-  const [file, setFile] = useState<File | null>(null);
+export default function UploadModal({ isOpen, onClose, onUploadSuccess }: { isOpen: boolean, onClose: () => void, onUploadSuccess: (photos?: UploadResponsePhoto[]) => void }) {
+  const [files, setFiles] = useState<File[]>([]);
   const [caption, setCaption] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -22,39 +22,56 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }: { isOp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) {
-      alert('Lütfen bir fotoğraf seçin.');
+    if (files.length === 0) {
+      alert('Lütfen en az bir fotoğraf seçin.');
       return;
     }
 
     setIsUploading(true);
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('caption', caption);
-    formData.append('isAnonymous', String(isAnonymous));
+    const uploadedPhotos: UploadResponsePhoto[] = [];
+    let hasError = false;
 
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
+    // Fotoğrafları sırayla (ardışık) yükle ki yükleme sırasında sıkışma veya timeout olmasın
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('caption', caption);
+      formData.append('isAnonymous', String(isAnonymous));
 
-      if (res.ok) {
-        const data = await res.json();
-        setFile(null);
-        setCaption('');
-        onUploadSuccess(data.photo);
-        onClose();
-      } else {
-        const data = await res.json();
-        alert(data.message || 'Yükleme başarısız!');
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          uploadedPhotos.push(data.photo);
+        } else {
+          const data = await res.json();
+          alert(`${file.name} yüklenirken hata: ` + (data.message || 'Başarısız!'));
+          hasError = true;
+          // Hata olsa da diğerlerine devam edilebilir veya durdurulabilir. Biz devam edelim.
+        }
+      } catch (error) {
+        console.error(error);
+        alert(`${file.name} yüklenirken ağ hatası oluştu.`);
+        hasError = true;
       }
-    } catch (error) {
-      console.error(error);
-      alert('Bir hata oluştu.');
-    } finally {
-      setIsUploading(false);
+    }
+
+    setIsUploading(false);
+
+    if (uploadedPhotos.length > 0) {
+      setFiles([]);
+      setCaption('');
+      onUploadSuccess(uploadedPhotos);
+      onClose();
+    } else if (!hasError) {
+      // Eğer hiç fotoğraf yüklenmediyse ve hata da yoksa (ki bu garip bir durum)
+      alert("Yüklenecek dosya bulunamadı.");
     }
   };
 
@@ -69,14 +86,21 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }: { isOp
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.dropzone}>
             <label htmlFor="fileUpload" className={styles.fileLabel}>
-              {file ? file.name : '📸 Bir fotoğraf seç veya sürükle'}
+              {files.length > 0 ? `${files.length} fotoğraf seçildi` : '📸 Fotoğraf(lar) seç veya sürükle'}
             </label>
             <input
               id="fileUpload"
               type="file"
               accept="image/*"
+              multiple
               className={styles.fileInput}
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              onChange={(e) => {
+                if (e.target.files) {
+                  setFiles(Array.from(e.target.files));
+                } else {
+                  setFiles([]);
+                }
+              }}
             />
           </div>
           
@@ -99,7 +123,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }: { isOp
             <span>Anonim olarak yükle (Kimliğin gizli kalır)</span>
           </label>
           
-          <button type="submit" className={styles.submitBtn} disabled={isUploading || !file}>
+          <button type="submit" className={styles.submitBtn} disabled={isUploading || files.length === 0}>
             {isUploading ? 'Yükleniyor...' : 'Şamataya Katıl!'}
           </button>
         </form>
