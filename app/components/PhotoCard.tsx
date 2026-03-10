@@ -67,6 +67,15 @@ export default function PhotoCard({ photo }: PhotoCardProps) {
         {photo.caption && <p className={styles.caption}>{photo.caption}</p>}
         
         <div className={styles.actions}>
+          <div className={styles.uploaderInfo}>
+            <div className={styles.avatar}>
+               {photo.user.name === 'Anonim Kullanıcı' ? 'A' : photo.user.name.charAt(0).toUpperCase()}
+            </div>
+            <span className={styles.uploaderName} title={photo.user.name}>
+              {photo.user.name === 'Anonim Kullanıcı' ? 'Anonim' : photo.user.name}
+            </span>
+          </div>
+
           <button 
             className={`${styles.voteBtn} ${hasVoted ? styles.voted : ''}`}
             onClick={toggleVote}
