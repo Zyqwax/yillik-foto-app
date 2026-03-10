@@ -20,9 +20,19 @@ interface UserType {
   userId: string;
 }
 
+interface UploadResponsePhoto {
+  _id: string;
+  url: string;
+  caption: string | null;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function VitrinClient({ initialPhotos, user }: { initialPhotos: PhotoType[], user: UserType }) {
   const [photos, setPhotos] = useState<PhotoType[]>(initialPhotos);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [gridSize, setGridSize] = useState<'large' | 'small'>('large');
 
   const fetchPhotos = async () => {
     try {
@@ -36,6 +46,24 @@ export default function VitrinClient({ initialPhotos, user }: { initialPhotos: P
     }
   };
 
+  const handleUploadSuccess = (newPhoto?: UploadResponsePhoto) => {
+    if (newPhoto) {
+      // API'den gelen veriyi client modeline uygun hale getirelim
+      const formattedPhoto: PhotoType = {
+        id: newPhoto._id,
+        url: newPhoto.url,
+        caption: newPhoto.caption,
+        voteCount: 0,
+        user: { name: user.name, username: user.username },
+        hasVoted: false,
+      };
+      setPhotos(prev => [formattedPhoto, ...prev]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      fetchPhotos();
+    }
+  };
+
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/login';
@@ -46,7 +74,7 @@ export default function VitrinClient({ initialPhotos, user }: { initialPhotos: P
       <header className={styles.header}>
         <div className={styles.logoInfo}>
           <div className={styles.logo}>📸 Şamata</div>
-          <p className={styles.subtitle}>En İyiler Vitrini</p>
+          <p className={styles.subtitle}>En İyiler Vitrini • {photos.length} Fotoğraf</p>
         </div>
         
         <div className={styles.actions}>
@@ -67,18 +95,35 @@ export default function VitrinClient({ initialPhotos, user }: { initialPhotos: P
             <p>Sınıfta kimse fotoğraf yüklememiş. İlk sen ol!</p>
           </div>
         ) : (
-          <div className={styles.grid}>
-            {photos.map((photo) => (
-              <PhotoCard key={photo.id} photo={photo} />
-            ))}
-          </div>
+          <>
+            <div className={styles.viewControls}>
+              <button 
+                className={`${styles.viewBtn} ${gridSize === 'large' ? styles.activeViewBtn : ''}`}
+                onClick={() => setGridSize('large')}
+              >
+                Büyük
+              </button>
+              <button 
+                className={`${styles.viewBtn} ${gridSize === 'small' ? styles.activeViewBtn : ''}`}
+                onClick={() => setGridSize('small')}
+              >
+                Küçük
+              </button>
+            </div>
+            
+            <div className={`${styles.grid} ${gridSize === 'small' ? styles.gridSmall : ''}`}>
+              {photos.map((photo) => (
+                <PhotoCard key={photo.id} photo={photo} />
+              ))}
+            </div>
+          </>
         )}
       </main>
 
       <UploadModal 
         isOpen={isUploadOpen} 
         onClose={() => setIsUploadOpen(false)} 
-        onUploadSuccess={fetchPhotos} 
+        onUploadSuccess={handleUploadSuccess} 
       />
     </div>
   );

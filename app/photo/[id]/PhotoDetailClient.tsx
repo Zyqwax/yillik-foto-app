@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import styles from './PhotoDetailClient.module.css';
 
 type PhotoType = {
@@ -23,6 +23,7 @@ export default function PhotoDetailClient({ initialPhoto }: { initialPhoto: Phot
   const [newComment, setNewComment] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
 
   const toggleVote = async () => {
     if (isVoting) return;
@@ -66,11 +67,7 @@ export default function PhotoDetailClient({ initialPhoto }: { initialPhoto: Phot
         const data = await res.json();
         setPhoto(prev => ({
           ...prev,
-          comments: [...prev.comments, {
-            ...data.comment,
-            createdAt: new Date().toISOString(),
-            userId: photo.currentUserId
-          }]
+          comments: [...prev.comments, data.comment]
         }));
         setNewComment("");
       }
@@ -117,9 +114,9 @@ export default function PhotoDetailClient({ initialPhoto }: { initialPhoto: Phot
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <Link href="/" className={styles.backButton}>
+        <button onClick={() => router.back()} className={styles.backButton}>
           ← Vitrine Dön
-        </Link>
+        </button>
       </header>
 
       <div className={styles.contentWrapper}>

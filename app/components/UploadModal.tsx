@@ -3,7 +3,16 @@
 import { useState } from 'react';
 import styles from './UploadModal.module.css';
 
-export default function UploadModal({ isOpen, onClose, onUploadSuccess }: { isOpen: boolean, onClose: () => void, onUploadSuccess: () => void }) {
+interface UploadResponsePhoto {
+  _id: string;
+  url: string;
+  caption: string | null;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export default function UploadModal({ isOpen, onClose, onUploadSuccess }: { isOpen: boolean, onClose: () => void, onUploadSuccess: (photo?: UploadResponsePhoto) => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -30,9 +39,10 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }: { isOp
       });
 
       if (res.ok) {
+        const data = await res.json();
         setFile(null);
         setCaption('');
-        onUploadSuccess();
+        onUploadSuccess(data.photo);
         onClose();
       } else {
         const data = await res.json();
