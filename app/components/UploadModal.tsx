@@ -15,6 +15,7 @@ interface UploadResponsePhoto {
 export default function UploadModal({ isOpen, onClose, onUploadSuccess }: { isOpen: boolean, onClose: () => void, onUploadSuccess: (photo?: UploadResponsePhoto) => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState('');
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
   if (!isOpen) return null;
@@ -31,6 +32,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }: { isOp
     const formData = new FormData();
     formData.append('file', file);
     formData.append('caption', caption);
+    formData.append('isAnonymous', String(isAnonymous));
 
     try {
       const res = await fetch('/api/upload', {
@@ -86,6 +88,16 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }: { isOp
             className={styles.textInput}
             maxLength={100}
           />
+          
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              checked={isAnonymous}
+              onChange={(e) => setIsAnonymous(e.target.checked)}
+              className={styles.checkboxInput}
+            />
+            <span>Anonim olarak yükle (Kimliğin gizli kalır)</span>
+          </label>
           
           <button type="submit" className={styles.submitBtn} disabled={isUploading || !file}>
             {isUploading ? 'Yükleniyor...' : 'Şamataya Katıl!'}

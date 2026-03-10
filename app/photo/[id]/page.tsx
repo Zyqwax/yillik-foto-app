@@ -45,10 +45,9 @@ export default async function PhotoPage({ params }: PageProps) {
       url: photo.url,
       caption: photo.caption,
       voteCount: photo.voteCount,
-      user: {
-        name: photo.userId.name,
-        username: photo.userId.username
-      },
+      user: photo.isAnonymous 
+        ? { name: 'Anonim Kullanıcı', username: 'anonim' }
+        : { name: photo.userId.name, username: photo.userId.username },
       hasVoted: !!vote,
       isOwner: (photo.userId._id as string).toString() === session.userId,
       currentUserId: session.userId,

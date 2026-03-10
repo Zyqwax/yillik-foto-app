@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const caption = formData.get('caption') as string;
+    const isAnonymous = formData.get('isAnonymous') === 'true';
 
     if (!file) {
       return NextResponse.json({ message: 'Dosya seçilmedi' }, { status: 400 });
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
       url: photoUrl,
       caption: caption || null,
       userId: session.userId,
+      isAnonymous,
     });
 
     return NextResponse.json({ message: 'Yükleme başarılı', photo: newPhoto });

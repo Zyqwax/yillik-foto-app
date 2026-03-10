@@ -28,10 +28,9 @@ export async function GET() {
         url: photo.url,
         caption: photo.caption,
         voteCount: photo.voteCount,
-        user: {
-          name: photo.userId.name,
-          username: photo.userId.username
-        },
+        user: photo.isAnonymous 
+          ? { name: 'Anonim Kullanıcı', username: 'anonim' } 
+          : { name: photo.userId.name, username: photo.userId.username },
         hasVoted: !!vote
       };
     }));
