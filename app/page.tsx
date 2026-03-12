@@ -27,20 +27,21 @@ export default async function Home() {
         photoId: photo._id
       });
 
-      return {
-        id: (photo._id as string).toString(),
-        url: photo.url,
-        caption: photo.caption,
-        voteCount: photo.voteCount,
-        user: photo.isAnonymous
-          ? { name: 'Anonim Kullanıcı', username: 'anonim' }
-          : {
-              name: photo.userId.name,
-              username: photo.userId.username
-            },
-        hasVoted: !!vote
-      };
-    }));
+        return {
+          id: (photo._id as string).toString(),
+          url: photo.url,
+          caption: photo.caption,
+          voteCount: photo.voteCount,
+          user: photo.isAnonymous
+            ? { name: 'Anonim Kullanıcı', username: 'anonim' }
+            : {
+                name: photo.userId.name,
+                username: photo.userId.username
+              },
+          hasVoted: !!vote,
+          isOwner: (photo.userId._id as string).toString() === session.userId
+        };
+      }));
   } catch (error) {
     console.error('Error fetching photos:', error);
     return (

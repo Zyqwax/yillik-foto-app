@@ -12,6 +12,7 @@ type PhotoType = {
   voteCount: number;
   user: { name: string; username: string };
   hasVoted: boolean;
+  isOwner: boolean;
   createdAt?: string;
 };
 
@@ -19,6 +20,7 @@ interface UserType {
   name: string;
   username: string;
   userId: string;
+  role: string;
 }
 
 interface UploadResponsePhoto {
@@ -133,6 +135,7 @@ export default function VitrinClient({ initialPhotos, user }: { initialPhotos: P
         voteCount: 0,
         user: { name: user.name, username: user.username },
         hasVoted: false,
+        isOwner: true,
       }));
       const newAll = [...formattedPhotos, ...allPhotos];
       setAllPhotos(sortPhotosLocal(newAll, sortBy));
@@ -208,7 +211,11 @@ export default function VitrinClient({ initialPhotos, user }: { initialPhotos: P
             
             <div className={`${styles.grid} ${gridSize === 'small' ? styles.gridSmall : ''}`}>
               {visiblePhotos.map((photo) => (
-                <PhotoCard key={photo.id} photo={photo} />
+                <PhotoCard 
+                  key={photo.id} 
+                  photo={photo} 
+                  isAdmin={user.role === 'admin'} 
+                />
               ))}
             </div>
             

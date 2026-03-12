@@ -10,6 +10,7 @@ export interface SessionPayload {
   userId: string;
   username: string;
   name: string;
+  role: string;
   expires: string | number | Date;
   [key: string]: string | number | Date | undefined;
 }
@@ -29,9 +30,9 @@ export async function decrypt(input: string): Promise<SessionPayload> {
   return payload as unknown as SessionPayload;
 }
 
-export async function setSession(userId: string, username: string, name: string) {
+export async function setSession(userId: string, username: string, name: string, role: string) {
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const session = await encrypt({ userId, username, name, expires });
+  const session = await encrypt({ userId, username, name, role, expires });
 
   (await cookies()).set(COOKIE_NAME, session, {
     expires,

@@ -50,6 +50,7 @@ export default async function PhotoPage({ params }: PageProps) {
         : { name: photo.userId.name, username: photo.userId.username },
       hasVoted: !!vote,
       isOwner: (photo.userId._id as string).toString() === session.userId,
+      isAdmin: session.role === 'admin',
       currentUserId: session.userId,
       comments: comments.map((c) => ({
         id: (c._id as string).toString(),

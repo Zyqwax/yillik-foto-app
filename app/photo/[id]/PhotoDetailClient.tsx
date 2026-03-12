@@ -13,6 +13,7 @@ type PhotoType = {
   user: { name: string; username: string };
   hasVoted: boolean;
   isOwner: boolean;
+  isAdmin: boolean;
   currentUserId: string;
   comments: { id: string; text: string; createdAt: string; userId: string; user: { name: string; username: string } }[];
 };
@@ -164,7 +165,7 @@ export default function PhotoDetailClient({ initialPhoto }: { initialPhoto: Phot
                 {photo.voteCount} Beğeni
               </span>
             </button>
-            {photo.isOwner && (
+            {(photo.isOwner || photo.isAdmin) && (
               <button
                 className={styles.deleteBtnBig}
                 onClick={deletePhoto}

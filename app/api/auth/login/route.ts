@@ -34,9 +34,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await setSession(user._id.toString(), user.username, user.name);
+    await setSession(user._id.toString(), user.username, user.name, user.role || 'user');
 
-    return NextResponse.json({ message: 'Giriş başarılı.', user: { id: user._id.toString(), username: user.username, name: user.name } });
+    return NextResponse.json({ 
+      message: 'Giriş başarılı.', 
+      user: { 
+        id: user._id.toString(), 
+        username: user.username, 
+        name: user.name,
+        role: user.role || 'user'
+      } 
+    });
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
